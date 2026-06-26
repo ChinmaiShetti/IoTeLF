@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans bg-background text-foreground;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold;
+  }
+}
+
+@layer utilities {
+  .pop-shadow {
+    box-shadow: 4px 4px 0px 0px #1E293B;
+  }
+  .pop-shadow-hover:hover {
+    box-shadow: 6px 6px 0px 0px #1E293B;
+  }
+  .pop-shadow-active:active {
+    box-shadow: 2px 2px 0px 0px #1E293B;
+  }
+  .bounce-transition {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
