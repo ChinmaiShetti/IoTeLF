@@ -4,21 +4,22 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: '#FFFDF5',
-        foreground: '#1E293B',
-        muted: '#F1F5F9',
-        'muted-foreground': '#64748B',
+        background: 'rgb(var(--color-background) / <alpha-value>)',
+        foreground: 'rgb(var(--color-foreground) / <alpha-value>)',
+        muted: 'rgb(var(--color-muted) / <alpha-value>)',
+        'muted-foreground': 'rgb(var(--color-muted-foreground) / <alpha-value>)',
         accent: '#8B5CF6',
         'accent-foreground': '#FFFFFF',
         secondary: '#F472B6',
         tertiary: '#FBBF24',
         quaternary: '#34D399',
-        border: '#E2E8F0',
+        border: 'rgb(var(--color-border) / <alpha-value>)',
         input: '#FFFFFF',
-        card: '#FFFFFF',
+        card: 'rgb(var(--color-card) / <alpha-value>)',
         ring: '#8B5CF6',
       },
       fontFamily: {

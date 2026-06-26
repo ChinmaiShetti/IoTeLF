@@ -3,26 +3,126 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply font-sans bg-background text-foreground;
+  :root {
+    --color-background: 255 253 245;
+    --color-foreground: 30 41 59;
+    --color-muted: 241 245 249;
+    --color-muted-foreground: 100 116 139;
+    --color-border: 226 232 240;
+    --color-card: 255 255 255;
+    --color-card-soft: 255 255 255;
+    --color-ring: 139 92 246;
+    --shadow-neutral: 8px 8px 0px 0px #e2e8f0;
+    --shadow-accent: 8px 8px 0px 0px #d8ccff;
+    --shadow-secondary: 8px 8px 0px 0px #f9bad8;
+    --shadow-tertiary: 8px 8px 0px 0px #fde68a;
+    --shadow-quaternary: 8px 8px 0px 0px #a7f3d0;
+    --shadow-pop: 4px 4px 0px 0px #1e293b;
+    --shadow-pop-hover: 6px 6px 0px 0px #1e293b;
+    --shadow-pop-active: 2px 2px 0px 0px #1e293b;
   }
-  
+
+  html.dark {
+    --color-background: 15 23 42;
+    --color-foreground: 241 245 249;
+    --color-muted: 30 41 59;
+    --color-muted-foreground: 148 163 184;
+    --color-border: 71 85 105;
+    --color-card: 22 31 49;
+    --color-card-soft: 30 41 59;
+    --color-ring: 196 181 253;
+    --shadow-neutral: 8px 8px 0px 0px #0b1120;
+    --shadow-accent: 8px 8px 0px 0px #5b3ea8;
+    --shadow-secondary: 8px 8px 0px 0px #9d3a6a;
+    --shadow-tertiary: 8px 8px 0px 0px #946200;
+    --shadow-quaternary: 8px 8px 0px 0px #177d63;
+    --shadow-pop: 4px 4px 0px 0px #f1f5f9;
+    --shadow-pop-hover: 6px 6px 0px 0px #f1f5f9;
+    --shadow-pop-active: 2px 2px 0px 0px #f1f5f9;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    background-color: rgb(var(--color-background));
+    color: rgb(var(--color-foreground));
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  #app {
+    min-height: 100vh;
+  }
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-bold;
+    font-family: "Outfit", system-ui, sans-serif;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  p {
+    line-height: 1.6;
+  }
+
+  button {
+    font: inherit;
+  }
+
+  ::selection {
+    background-color: rgba(139, 92, 246, 0.24);
   }
 }
 
 @layer utilities {
   .pop-shadow {
-    box-shadow: 4px 4px 0px 0px #1E293B;
+    box-shadow: var(--shadow-pop);
   }
-  .pop-shadow-hover:hover {
-    box-shadow: 6px 6px 0px 0px #1E293B;
-  }
-  .pop-shadow-active:active {
-    box-shadow: 2px 2px 0px 0px #1E293B;
-  }
+
   .bounce-transition {
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .dotted-paper {
+    background-image: radial-gradient(rgba(var(--color-foreground), 0.12) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  .confetti-shape {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .surface-panel {
+    background-color: rgb(var(--color-card-soft));
+    border: 2px solid rgb(var(--color-border));
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .confetti-shape {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

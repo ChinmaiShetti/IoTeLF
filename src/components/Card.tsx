@@ -9,33 +9,62 @@ interface CardProps {
 }
 
 export const Card = ({ title, icon, color = 'accent', children, className = '' }: CardProps) => {
-  const colorClasses = {
-    accent: 'bg-accent',
-    secondary: 'bg-secondary',
-    tertiary: 'bg-tertiary',
-    quaternary: 'bg-quaternary',
+  const accentMap: Record<CardProps['color'] & string, string> = {
+    accent: '#8B5CF6',
+    secondary: '#F472B6',
+    tertiary: '#FBBF24',
+    quaternary: '#34D399',
   };
 
-  const shadowStyles = {
-    accent: { boxShadow: '8px 8px 0px 0px #E2E8F0' },
-    secondary: { boxShadow: '8px 8px 0px 0px #F472B6' },
-    tertiary: { boxShadow: '8px 8px 0px 0px #FBBF24' },
-    quaternary: { boxShadow: '8px 8px 0px 0px #34D399' },
+  const shadowMap: Record<CardProps['color'] & string, string> = {
+    accent: 'var(--shadow-accent)',
+    secondary: 'var(--shadow-secondary)',
+    tertiary: 'var(--shadow-tertiary)',
+    quaternary: 'var(--shadow-quaternary)',
   };
 
   return (
     <div
-      className={`bounce-transition bg-card border-2 border-foreground rounded-xl p-6 relative hover:rotate-[-1deg] hover:scale-[1.02] ${className}`}
-      style={shadowStyles[color]}
+      className={`bounce-transition relative ${className}`}
+      style={{
+        backgroundColor: 'rgb(var(--color-card))',
+        border: '2px solid rgb(var(--color-foreground))',
+        borderRadius: '24px',
+        padding: '24px',
+        boxShadow: shadowMap[color],
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'rotate(-1deg) scale(1.02)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = '';
+      }}
     >
       {icon && (
         <div
-          className={`absolute -top-4 -left-4 w-12 h-12 ${colorClasses[color]} rounded-full border-2 border-foreground flex items-center justify-center text-white`}
+          style={{
+            position: 'absolute',
+            top: '-16px',
+            left: '-16px',
+            width: '48px',
+            height: '48px',
+            backgroundColor: accentMap[color],
+            borderRadius: '9999px',
+            border: '2px solid rgb(var(--color-foreground))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+          }}
         >
           {icon}
         </div>
       )}
-      {title && <h3 className="text-xl font-bold mb-4 mt-2">{title}</h3>}
+      {title && (
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '16px', marginTop: '8px' }}>
+          {title}
+        </h3>
+      )}
       {children}
     </div>
   );
