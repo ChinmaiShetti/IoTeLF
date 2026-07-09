@@ -16,9 +16,22 @@ import {
   Radio,
 } from 'lucide-react';
 import { Card } from './components/Card';
+import { AuditTrail } from './components/AuditTrail';
+import {
+  formatTimestamp,
+  formatTimeOnly,
+  getStatusTone,
+  sortEvents,
+  latestAuthEvent,
+  type DeviceState,
+  type EventItem,
+} from './lib/events';
+import { useFirebaseLive } from './lib/useFirebaseLive';
 
-const BASE_URL = 'https://iotel-ea41a-default-rtdb.firebaseio.com';
-const AUTH_EVENTS = ['AUTH_OK', 'AUTH_FAIL', 'AUTH_TIMEOUT', 'SESSION_CLOSED'] as const;
+// Firebase RTDB base URL — override at build time with VITE_FIREBASE_URL.
+const BASE_URL =
+  (import.meta.env.VITE_FIREBASE_URL as string | undefined) ??
+  'https://iotelfinal-default-rtdb.firebaseio.com';
 
 const palette = {
   accent: '#8B5CF6',
@@ -31,74 +44,6 @@ const palette = {
   card: 'rgb(var(--color-card))',
   border: 'rgb(var(--color-border))',
 };
-
-interface DeviceState {
-  valve_pct: number;
-  valve_angle: number;
-  pump: 'ON' | 'OFF';
-  fan: 'ON' | 'OFF';
-}
-
-interface EventItem {
-  timestamp: string;
-  event: string;
-  data?: {
-    uid?: string;
-    machine?: string;
-    cmd?: string;
-    position?: number;
-    servo_angle?: number;
-    reason?: string;
-    msg?: string;
-  };
-}
-
-interface EventWithKey extends EventItem {
-  key: string;
-}
-
-function formatTimestamp(timestamp: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(timestamp));
-}
-
-function formatTimeOnly(timestamp: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-  }).format(new Date(timestamp));
-}
-
-function getStatusTone(eventName?: string) {
-  switch (eventName) {
-    case 'AUTH_OK':
-      return {
-        label: 'Authenticated',
-        bg: 'rgba(52, 211, 153, 0.16)',
-        fg: '#047857',
-        darkFg: '#6ee7b7',
-      };
-    case 'AUTH_FAIL':
-    case 'AUTH_TIMEOUT':
-    case 'SESSION_CLOSED':
-      return {
-        label: eventName.replaceAll('_', ' '),
-        bg: 'rgba(244, 114, 182, 0.16)',
-        fg: '#be185d',
-        darkFg: '#f9a8d4',
-      };
-    default:
-      return {
-        label: 'Unknown',
-        bg: 'rgba(148, 163, 184, 0.16)',
-        fg: '#475569',
-        darkFg: '#cbd5e1',
-      };
-  }
-}
 
 const App = () => {
   const [deviceState, setDeviceState] = useState<DeviceState | null>(null);
@@ -154,19 +99,19 @@ const App = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000);
+    // Backstop poll in case the live stream is unavailable or drops.
+    const interval = setInterval(fetchData, 20000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const eventsList: EventWithKey[] = events
-    ? Object.entries(events)
-        .map(([key, value]) => ({ key, ...value }))
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    : [];
+  // Near-real-time updates via Firebase SSE; re-fetches canonical data on change.
+  useFirebaseLive(BASE_URL, ['/device_state.json', '/events.json'], fetchData);
 
-  const latestAuthEvent = eventsList.find((event) => AUTH_EVENTS.includes(event.event as (typeof AUTH_EVENTS)[number])) ?? null;
-  const latestUid = latestAuthEvent?.data?.uid ?? 'N/A';
-  const authTone = getStatusTone(latestAuthEvent?.event);
+  const eventsList = sortEvents(events);
+  const latestAuth = latestAuthEvent(eventsList);
+  const latestUid = latestAuth?.data?.uid ?? 'N/A';
+  const authTone = getStatusTone(latestAuth?.event);
 
   if (loading) {
     return (
@@ -374,7 +319,7 @@ const App = () => {
                 }}
               >
                 <RefreshCw size={16} strokeWidth={2.5} />
-                Refresh every 5s
+                Live updates
               </span>
             </div>
             <div style={{ display: 'flex', gap: '18px', alignItems: 'center' }}>
@@ -444,6 +389,8 @@ const App = () => {
 
         {error && (
           <div
+            role="alert"
+            aria-live="assertive"
             style={{
               marginBottom: '28px',
               display: 'flex',
@@ -480,7 +427,7 @@ const App = () => {
                         Session state
                       </div>
                       <div style={{ marginTop: '8px', fontSize: '1.1rem', fontWeight: 800 }}>
-                        {latestAuthEvent?.event ?? 'No auth event'}
+                        {latestAuth?.event ?? 'No auth event'}
                       </div>
                     </div>
                     <span
@@ -490,7 +437,7 @@ const App = () => {
                         padding: '8px 12px',
                         borderRadius: '999px',
                         backgroundColor: authTone.bg,
-                        color: document.documentElement.classList.contains('dark') ? authTone.darkFg : authTone.fg,
+                        color: darkMode ? authTone.darkFg : authTone.fg,
                         fontWeight: 800,
                         whiteSpace: 'nowrap',
                       }}
@@ -716,6 +663,14 @@ const App = () => {
               )}
             </div>
           </Card>
+        </section>
+
+        <section style={{ marginTop: '40px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
+            <span style={{ width: '12px', height: '12px', borderRadius: '999px', backgroundColor: palette.quaternary }} />
+            <h2 style={{ margin: 0, fontSize: '1.9rem' }}>On-chain Audit Trail</h2>
+          </div>
+          <AuditTrail events={eventsList} palette={palette} />
         </section>
 
         <footer

@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Secrets / env — never commit private keys or RPC URLs
+.env
+.env.*
+!.env.example
+
+# Hardhat
+artifacts
+cache
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
