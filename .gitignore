@@ -31,3 +31,5 @@ cache
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
